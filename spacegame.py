@@ -17,10 +17,14 @@ screen = Screen(800, 600)
 bgImg = pg.image.load('media/bg.jpg')
 bgImg = pg.transform.scale(bgImg, (screen.w, screen.h))
 
-enemyN = 5
 player = Player(screen, 2)
-enemy = [Enemy(screen)]*enemyN
-bullet = Bullet(player, screen)
+bullet = Bullet(player, screen, 5)
+
+enemyN = 5
+enemy = [0]*enemyN
+for i in range(enemyN) :
+    enemy[i] = Enemy(screen)
+    enemy[i].reset()
 
 #detect collision
 def isCollision(enemy, bullet) :
@@ -29,8 +33,6 @@ def isCollision(enemy, bullet) :
         if bXCen >= enemy.X and bXCen <= enemy.X + enemy.ImgW :
             return True
 
-for i in range(enemyN) :
-    enemy[i].reset()
 bullet.reset()
 score = 0
 running = True
@@ -58,7 +60,7 @@ while running :
 
         if event.type == pg.KEYUP :
             if event.key == pg.K_a or event.key == pg.K_d :
-                player.deltaX = 0
+                player.deltaX = 0        
 
     # player movement
     player.X += player.deltaX * player.speed
@@ -85,6 +87,7 @@ while running :
             score += 1
             print(score)
         enemy[i].blit()
+
         
     #bullet movement
     if bullet.state == "fire" :
