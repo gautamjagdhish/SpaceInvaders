@@ -3,6 +3,7 @@ import pygame as pg
 class Bullet :
     def __init__(self, player, screen, speed) :
         self.Img = pg.image.load('media/bullet.png')
+        self.sound = pg.mixer.Sound('media/bullet.wav')
         self.ImgW = self.Img.get_size()[0]
         self.ImgH = self.Img.get_size()[1]
         self.Img = pg.transform.scale(self.Img, (int(0.5*self.ImgW), int(0.5*self.ImgH)))
@@ -22,5 +23,8 @@ class Bullet :
     #resets bullet properties
     def reset(self) :
         self.X = self.player.X + self.player.ImgW/2 - self.ImgW/2
-        self.Y = self.player.Y
+        self.Y = self.player.Y + 2*self.ImgH
         self.state = "ready"
+
+    def playSound(self) :
+        self.sound.play()

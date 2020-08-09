@@ -1,5 +1,6 @@
 import pygame as pg
 import random as r
+
 from player import Player
 from enemy import Enemy
 from bullet import Bullet
@@ -17,10 +18,18 @@ screen = Screen(800, 600)
 bgImg = pg.image.load('media/bg.jpg')
 bgImg = pg.transform.scale(bgImg, (screen.w, screen.h))
 
-player = Player(screen, 2)
-bullet = Bullet(player, screen, 5)
+#bg music
+pg.mixer.music.load('media/background.mp3')
+pg.mixer.music.play(-1)
 
-enemyN = 5
+#load explosion
+explosionSound = pg.mixer.Sound('media/explosion.wav')
+
+#init classes
+player = Player(screen, 2) # player speed
+bullet = Bullet(player, screen, 5) #bullet speed
+bullet.reset()
+enemyN = 2
 enemy = [0]*enemyN
 for i in range(enemyN) :
     enemy[i] = Enemy(screen)
@@ -33,9 +42,20 @@ def isCollision(enemy, bullet) :
         if bXCen >= enemy.X and bXCen <= enemy.X + enemy.ImgW :
             return True
 
-bullet.reset()
 score = 0
+WHITE = (255, 255, 255)
+def showScore() :
+    font = pg.font.Font('media/SpaceObsessed.ttf', 50)
+    scoreRender = font.render("SCORE : " + str(score), True, WHITE)
+    screen.surface.blit(scoreRender, (10,10))
+
+def showGameOver() :
+    font = pg.font.Font('media/SpaceObsessed.ttf', 150)
+    goRender = font.render("GAME OVER", True, WHITE)
+    screen.surface.blit(goRender, (int(0.05*screen.w), int(screen.h/2) - 75))
+
 running = True
+go = False
 
 while running :
     # load bg
@@ -55,8 +75,10 @@ while running :
                 player.deltaX = 1
             #shoot bullet
             if event.key == pg.K_SPACE and bullet.state == "ready" :
+                bullet.playSound()
                 bullet.reset()
                 bullet.state = "fire"
+                
 
         if event.type == pg.KEYUP :
             if event.key == pg.K_a or event.key == pg.K_d :
@@ -71,8 +93,20 @@ while running :
     player.blit()
 
     # enemy movement
-    for i in range(enemyN) :
+    i = 0
+    while(i<len(enemy)) :
         enemy[i].X += enemy[i].deltaX
+
+        #END - enemy collison with player
+        if enemy[i].Y + enemy[i].ImgH/2 >= player.Y :
+            pXCen = player.X + player.ImgW/2
+            eXCen = enemy[i].X + enemy[i].ImgW/2
+            if abs(pXCen - eXCen) < player.ImgW/2 :
+                go = True
+                enemy.clear()
+                break
+
+        #hitting the walls
         if enemy[i].X > screen.w - player.ImgW :
             enemy[i].X = screen.w - player.ImgW
             enemy[i].deltaX = -enemy[i].deltaX
@@ -81,13 +115,21 @@ while running :
             enemy[i].X = 0
             enemy[i].deltaX = -enemy[i].deltaX
             enemy[i].Y += enemy[i].deltaY
-        if isCollision(enemy[i], bullet) :
-            bullet.reset()
-            enemy[i].reset()
-            score += 1
-            print(score)
-        enemy[i].blit()
 
+        #collision
+        if isCollision(enemy[i], bullet) :
+            explosionSound.play()
+            score += 1
+            bullet.reset()
+            enemy.remove(enemy[i])
+        else :
+            enemy[i].blit()
+            i += 1
+
+        #player cleared all enemies
+        if len(enemy) == 0 :
+            go = True
+        
         
     #bullet movement
     if bullet.state == "fire" :
@@ -97,4 +139,8 @@ while running :
         bullet.Y = player.Y - bullet.ImgH/2
         bullet.state = "ready"
 
+    if go == True :
+        showGameOver()
+
+    showScore()
     pg.display.update()

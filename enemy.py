@@ -20,5 +20,5 @@ class Enemy :
     def reset(self) :  
         self.X = r.randint(0, self.screen.w - self.ImgW)
         self.Y = r.uniform(0, 0.3)*self.screen.h
-        self.deltaX = r.uniform(0.5, 2.5)
+        self.deltaX = r.uniform(1, 10)
     
