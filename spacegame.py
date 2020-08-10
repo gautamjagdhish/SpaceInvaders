@@ -29,13 +29,15 @@ explosionSound = pg.mixer.Sound('media/explosion.wav')
 player = Player(screen, 2) # player speed
 bullet = Bullet(player, screen, 5) #bullet speed
 bullet.reset()
-enemyN = 2
-enemy = [0]*enemyN
-for i in range(enemyN) :
-    enemy[i] = Enemy(screen)
-    enemy[i].reset()
 
-#detect collision
+enemy = [Enemy(screen, 1)]
+
+#level up
+def increaseEnemy(enemyN) :
+    for i in range(enemyN) :
+        enemy.append(Enemy(screen, enemyN))
+
+#detect bullet hits
 def isCollision(enemy, bullet) :
     if enemy.Y + enemy.ImgH >= bullet.Y :
         bXCen = bullet.X + bullet.ImgW/2
@@ -54,7 +56,16 @@ def showGameOver() :
     goRender = font.render("GAME OVER", True, WHITE)
     screen.surface.blit(goRender, (int(0.05*screen.w), int(screen.h/2) - 75))
 
+def levelUp(enemyN) :
+    increaseEnemy(enemyN)
+    font = pg.font.Font('media/SpaceObsessed.ttf', 150)
+    goRender = font.render("LEVEL " + str(enemyN), True, WHITE)
+    screen.surface.blit(goRender, (int(0.3*screen.w/2), int(screen.h/2) - 75))
+    pg.display.update()
+    pg.time.delay(1000)
+
 running = True
+enemyN = 1
 go = False
 
 while running :
@@ -78,7 +89,6 @@ while running :
                 bullet.playSound()
                 bullet.reset()
                 bullet.state = "fire"
-                
 
         if event.type == pg.KEYUP :
             if event.key == pg.K_a or event.key == pg.K_d :
@@ -103,6 +113,7 @@ while running :
             eXCen = enemy[i].X + enemy[i].ImgW/2
             if abs(pXCen - eXCen) < player.ImgW/2 :
                 go = True
+                enemyN = 0
                 enemy.clear()
                 break
 
@@ -116,7 +127,7 @@ while running :
             enemy[i].deltaX = -enemy[i].deltaX
             enemy[i].Y += enemy[i].deltaY
 
-        #collision
+        #bullet hit enemy
         if isCollision(enemy[i], bullet) :
             explosionSound.play()
             score += 1
@@ -126,21 +137,21 @@ while running :
             enemy[i].blit()
             i += 1
 
-        #player cleared all enemies
+        #LEVEL UP - player cleared all enemies
         if len(enemy) == 0 :
-            go = True
-        
+            enemyN += 1
+            levelUp(enemyN)
         
     #bullet movement
     if bullet.state == "fire" :
         bullet.Y -= bullet.deltaY
         bullet.blit()
-    if bullet.Y < -bullet.ImgH :
-        bullet.Y = player.Y - bullet.ImgH/2
+    if bullet.Y < 0 :
+        bullet.reset()
         bullet.state = "ready"
+
 
     if go == True :
         showGameOver()
-
     showScore()
     pg.display.update()

@@ -18,12 +18,13 @@ class Bullet :
         self.reset()
 
     def blit(self) :
-        self.screen.surface.blit(self.Img, (int(self.X), int(self.Y)))
+        if self.Y < self.player.Y :
+            self.screen.surface.blit(self.Img, (int(self.X), int(self.Y)))
 
     #resets bullet properties
     def reset(self) :
         self.X = self.player.X + self.player.ImgW/2 - self.ImgW/2
-        self.Y = self.player.Y + 2*self.ImgH
+        self.Y = self.player.Y + self.ImgH
         self.state = "ready"
 
     def playSound(self) :
